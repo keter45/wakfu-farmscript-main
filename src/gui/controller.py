@@ -35,6 +35,11 @@ class GUIController:
         self.selected_key = key
         logger.info(f"Hotkey selecionada: {key}")
     
+    def set_cut_only_mode(self, enabled):
+        globalState.cutOnlyMode = enabled
+        mode_text = "ATIVADO" if enabled else "DESATIVADO"
+        logger.info(f"Modo Cut-Only: {mode_text}")
+    
     def get_resources_for_job(self, job):
         return resource_loader.get_resources_for_job(job)
     

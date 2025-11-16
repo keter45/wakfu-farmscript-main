@@ -80,7 +80,7 @@ def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: 
             search_height
         )
         
-        for conf in [confidence, 0.65, 0.55, 0.45]:
+        for conf in [confidence, 0.70]:
             try:
                 location = auto.locateCenterOnScreen(icon_path, confidence=conf, region=region)
                 if location:
@@ -92,7 +92,7 @@ def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: 
             except:
                 continue
         
-        logger.warning(f"Ícone {icon_filename} não encontrado na região do menu")
+        logger.warning(f"Ícone {icon_filename} não encontrado na região do menu (tentou conf 0.75 e 0.70)")
         return False
     
     except Exception as e:

@@ -17,7 +17,7 @@ class FarmScriptGUI:
     def __init__(self, root):
         self.root = root
         self.root.title(f"{const.PROJECT_NAME} {const.VERSION}")
-        self.root.geometry("500x420")
+        self.root.geometry("500x480")
         self.root.resizable(False, False)
         
         self._setup_style()
@@ -97,13 +97,30 @@ class FarmScriptGUI:
         frame = ttk.LabelFrame(parent, text="Configurações de Tempo", padding="10")
         frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        ttk.Label(frame, text="Delay após colheita (seg):").pack(side=tk.LEFT, padx=5)
+        # Primeira linha: Delay
+        delay_frame = ttk.Frame(frame)
+        delay_frame.pack(fill=tk.X, pady=2)
+        
+        ttk.Label(delay_frame, text="Delay após colheita (seg):").pack(side=tk.LEFT, padx=5)
         
         self.delay_var = tk.StringVar(value="15")
-        delay_spin = ttk.Spinbox(frame, from_=1, to=300, textvariable=self.delay_var, width=5)
+        delay_spin = ttk.Spinbox(delay_frame, from_=1, to=300, textvariable=self.delay_var, width=5)
         delay_spin.pack(side=tk.LEFT, padx=5)
         
-        ttk.Label(frame, text="(Aguarda barra + delay)", foreground='gray').pack(side=tk.LEFT, padx=5)
+        ttk.Label(delay_frame, text="(Aguarda barra + delay)", foreground='gray').pack(side=tk.LEFT, padx=5)
+        
+        # Segunda linha: Modo Cut-Only
+        mode_frame = ttk.Frame(frame)
+        mode_frame.pack(fill=tk.X, pady=2)
+        
+        self.cut_only_var = tk.BooleanVar(value=False)
+        cut_only_check = ttk.Checkbutton(
+            mode_frame, 
+            text="Modo Cut-Only (sempre corta, nunca planta)", 
+            variable=self.cut_only_var,
+            command=self._on_cut_only_changed
+        )
+        cut_only_check.pack(side=tk.LEFT, padx=5)
     
     def _create_control_frame(self, parent):
         frame = ttk.Frame(parent)
@@ -141,6 +158,10 @@ class FarmScriptGUI:
     def _on_key_changed(self, event):
         key = self.key_var.get()
         gui_controller.select_key(key)
+    
+    def _on_cut_only_changed(self):
+        cut_only = self.cut_only_var.get()
+        gui_controller.set_cut_only_mode(cut_only)
     
     def _update_resources(self):
         job = self.job_var.get()

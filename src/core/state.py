@@ -15,5 +15,6 @@ class GlobalState:
         self.isStopButtonEnabled = False
         self.isResourceComboEnabled = False
         self.isZoneComboEnabled = False
+        self.cutOnlyMode = False  # Modo que só usa Cut, sem Harvest
 
 globalState = GlobalState()
