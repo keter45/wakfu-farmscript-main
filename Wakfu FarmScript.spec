@@ -2,11 +2,15 @@
 
 
 a = Analysis(
-    ['FarmScriptGUI_Tkinter.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
-    hiddenimports=[],
+    datas=[
+        ('img', 'img'),
+        ('game_area_config.json', '.'),
+        ('progress_bar_config.json', '.'),
+    ],
+    hiddenimports=['src', 'src.core', 'src.gui', 'src.automation', 'src.utils'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

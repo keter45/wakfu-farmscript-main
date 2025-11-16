@@ -55,12 +55,15 @@ def check_files():
     print("✓ Verificando arquivos do projeto...")
     
     files_needed = [
-        'FarmScriptGUI_Tkinter.py',
+        'main.py',
         'calibrator.py',
         'constants.py',
-        'core.py',
-        'routines.py',
         'requirements.txt',
+    ]
+    
+    folders_needed = [
+        'src',
+        'img',
     ]
     
     all_ok = True
@@ -69,6 +72,13 @@ def check_files():
             print(f"  ✓ {file}")
         else:
             print(f"  ✗ {file} - NÃO ENCONTRADO")
+            all_ok = False
+    
+    for folder in folders_needed:
+        if os.path.exists(folder) and os.path.isdir(folder):
+            print(f"  ✓ {folder}/")
+        else:
+            print(f"  ✗ {folder}/ - NÃO ENCONTRADO")
             all_ok = False
     
     return all_ok
@@ -99,7 +109,7 @@ def main():
     print("✓ INSTALAÇÃO CONCLUÍDA COM SUCESSO!")
     print("="*60)
     print("\n🚀 Próximos passos:")
-    print("  1. Execute: python FarmScriptGUI_Tkinter.py")
+    print("  1. Execute: python main.py")
     print("  2. Configure o Job, Zona e Recurso")
     print("  3. Clique em '📷 Calibrar' para capturar imagens")
     print("  4. Inicie a automação!\n")
