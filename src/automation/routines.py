@@ -8,8 +8,16 @@ from src.utils.helpers import get_closest_point, toss_coin, move_and_click, find
 from src.utils.logger import logger
 
 def _get_img_name(resource: str, subcategory: str = ""):
+    """Extrai o nome limpo do recurso removendo nível e indicadores"""
+    # Remove indicadores ✓ e ✗
+    clean_resource = resource.replace(" ✓", "").replace(" ✗", "").strip()
+    
+    # Remove o nível (formato: "90 - Jollyflower" -> "Jollyflower")
+    if " - " in clean_resource:
+        clean_resource = clean_resource.split(" - ", 1)[1].strip()
+    
     suffix = f"-{subcategory}" if subcategory else ""
-    return resource.replace(" ", "-") + suffix + ".png"
+    return clean_resource.replace(" ", "-") + suffix + ".png"
 
 def simple_mining_actions():
     auto.rightClick(duration=0.2)
