@@ -49,11 +49,15 @@ class AutomationEngine:
                 
                 logger.action(f"Executando colheita de {self.resource}...")
                 
-                self._execute_harvest_routine()
+                success = self._execute_harvest_routine()
                 
-                logger.success(f"Colheita concluída! Aguardando {self.delay_seconds}s...")
-                self._wait_with_feedback(self.delay_seconds)
-                logger.info("Ciclo completo!")
+                if success:
+                    logger.success(f"Colheita concluída! Aguardando {self.delay_seconds}s...")
+                    self._wait_with_feedback(self.delay_seconds)
+                    logger.info("Ciclo completo!")
+                else:
+                    logger.info("Aguardando próxima tentativa...")
+                    time.sleep(2)
             
             except Exception as e:
                 logger.error(f"Erro no loop: {e}")
@@ -72,7 +76,9 @@ class AutomationEngine:
         
         routine = routine_map.get(self.job)
         if routine:
-            routine()
+            result = routine()
+            return result if result is not None else True
+        return False
     
     def _wait_with_feedback(self, seconds):
         for i in range(int(seconds)):

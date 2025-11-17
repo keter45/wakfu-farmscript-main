@@ -56,12 +56,25 @@ def move_and_click(x: int, y: int, button: str = "left", sleep_time: float = 0.1
     auto.click(button=button)
     time.sleep(sleep_time)
 
-def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: float = 0.1):
-    icon_path = const.ICONS_PATH + icon_filename
+def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: float = 0.1, alternative_icon: str = None):
+    """Busca e clica em um ícone, com suporte para ícone alternativo"""
+    icons_to_try = [icon_filename]
     
-    if not os.path.exists(icon_path):
-        logger.error(f"Ícone não encontrado: {icon_path}")
-        return False
+    # Adiciona ícone alternativo se fornecido
+    if alternative_icon:
+        icons_to_try.append(alternative_icon)
+    # Adiciona ícone alternativo automático para reap (compara string, não constante)
+    elif icon_filename == "reap-icon.png":
+        icons_to_try.append("reap-icon-alt.png")
+        logger.info(f"Adicionado ícone alternativo: reap-icon-alt.png")
+    
+    # Ajusta confiabilidade para reap (mais permissivo)
+    if icon_filename == "reap-icon.png" or icon_filename == "reap-icon-alt.png":
+        confidence_levels = [0.65, 0.60, 0.55]
+    else:
+        confidence_levels = [confidence, 0.70]
+    
+    logger.info(f"Buscando ícones: {icons_to_try} com confiabilidade {confidence_levels}")
     
     try:
         # Aguarda o menu aparecer
@@ -80,35 +93,55 @@ def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: 
             search_height
         )
         
-        for conf in [confidence, 0.70]:
-            try:
-                location = auto.locateCenterOnScreen(icon_path, confidence=conf, region=region)
-                if location:
-                    logger.debug(f"Ícone {icon_filename} encontrado (conf={conf}) em ({location.x}, {location.y})")
-                    auto.moveTo(location.x, location.y, duration=0.1)
-                    time.sleep(0.1)
-                    auto.click()
-                    return True
-            except:
+        # Tenta cada ícone na lista
+        for icon_file in icons_to_try:
+            icon_path = const.ICONS_PATH + icon_file
+            
+            if not os.path.exists(icon_path):
+                logger.debug(f"Ícone não existe: {icon_path}")
                 continue
+            
+            for conf in confidence_levels:
+                try:
+                    location = auto.locateCenterOnScreen(icon_path, confidence=conf, region=region)
+                    if location:
+                        logger.debug(f"Ícone {icon_file} encontrado (conf={conf}) em ({location.x}, {location.y})")
+                        auto.moveTo(location.x, location.y, duration=0.1)
+                        time.sleep(0.1)
+                        auto.click()
+                        return True
+                except:
+                    continue
         
-        logger.warning(f"Ícone {icon_filename} não encontrado na região do menu (tentou conf 0.75 e 0.70)")
+        logger.warning(f"Nenhum ícone encontrado na região do menu (tentou {len(icons_to_try)} ícone(s))")
         return False
     
     except Exception as e:
-        logger.error(f"Erro ao procurar ícone {icon_filename}: {e}")
+        logger.error(f"Erro ao procurar ícone: {e}")
         return False
 
 def get_action_icon_by_resource(job: str, resource_name: str, action: str):
+    """Retorna o ícone de ação baseado no tipo de recurso"""
     if job == const.JOB_FARMER:
-        resource_icons = const.ICON_FOR_ACTIONS_FARMER.get(resource_name)
-        if resource_icons is None:
-            return const.ICON_ACTION_FARMING_CUT if action == "harvest" else const.ICON_ACTION_FARMING_SEEDS
+        # Limpa o nome do recurso (remove nível e indicadores)
+        clean_name = resource_name.replace(" ✓", "").replace(" ✗", "").strip()
+        if " - " in clean_name:
+            clean_name = clean_name.split(" - ", 1)[1].strip().lower()
+        else:
+            clean_name = clean_name.lower()
         
-        icon = resource_icons.get(action)
-        if icon is None:
-            return const.ICON_ACTION_FARMING_CUT if action == "harvest" else const.ICON_ACTION_FARMING_SEEDS
+        # Recursos que usam REAP (ceifar) - grãos, cereais, linho, algodão
+        reap_resources = [
+            "wheat", "barley", "oats", "rye", "rice", "millet",
+            "flax", "hemp", "jute", "cotton", "linen"
+        ]
         
-        return icon
+        # Verifica se algum dos termos de REAP está no nome
+        uses_reap = any(term in clean_name for term in reap_resources)
+        
+        if action == "harvest":
+            return const.ICON_ACTION_FARMING_REAP if uses_reap else const.ICON_ACTION_FARMING_CUT
+        else:
+            return const.ICON_ACTION_FARMING_SEEDS
     
     return None

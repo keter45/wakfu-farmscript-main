@@ -8,7 +8,7 @@ from src.utils.helpers import get_closest_point, toss_coin, move_and_click, find
 from src.utils.logger import logger
 
 def _get_img_name(resource: str, subcategory: str = ""):
-    """Extrai o nome limpo do recurso removendo nível e indicadores"""
+    """Extrai o nome limpo do recurso removendo nível e indicadores, e converte para CamelCase"""
     # Remove indicadores ✓ e ✗
     clean_resource = resource.replace(" ✓", "").replace(" ✗", "").strip()
     
@@ -16,8 +16,12 @@ def _get_img_name(resource: str, subcategory: str = ""):
     if " - " in clean_resource:
         clean_resource = clean_resource.split(" - ", 1)[1].strip()
     
+    # Converte para CamelCase (Palm rod -> PalmRod)
+    words = clean_resource.split()
+    camel_case = ''.join(word.capitalize() for word in words)
+    
     suffix = f"-{subcategory}" if subcategory else ""
-    return clean_resource.replace(" ", "-") + suffix + ".png"
+    return camel_case + suffix + ".png"
 
 def simple_mining_actions():
     auto.rightClick(duration=0.2)
@@ -91,13 +95,16 @@ def advanced_farming_actions():
             if closest:
                 move_and_click(closest.x, closest.y, "right")
                 find_icon_and_click(get_action_icon_by_resource(const.JOB_FARMER, resource, "harvest"), confidence=0.70)
+                return True
         elif has_resources:
             closest = get_closest_point(resource_locations)
             if closest:
                 move_and_click(closest.x, closest.y, "right")
                 find_icon_and_click(get_action_icon_by_resource(const.JOB_FARMER, resource, "harvest"), confidence=0.70)
+                return True
         else:
-            logger.info("Recurso não encontrado")
+            logger.warning("Recurso não encontrado na tela")
+            return False
     else:
         # Modo normal: alterna entre harvest e seeds
         if has_seeds and has_resources:
@@ -107,23 +114,30 @@ def advanced_farming_actions():
                     move_and_click(closest.x, closest.y, "right")
                     action = "harvest" if toss_coin(0.33) and len(seeds_locations) > 1 else "seeds"
                     find_icon_and_click(get_action_icon_by_resource(const.JOB_FARMER, resource, action), confidence=0.70)
+                    return True
             else:
                 closest = get_closest_point(resource_locations)
                 if closest:
                     move_and_click(closest.x, closest.y, "right")
                     find_icon_and_click(get_action_icon_by_resource(const.JOB_FARMER, resource, "harvest"), confidence=0.70)
+                    return True
         elif has_seeds:
             closest = get_closest_point(seeds_locations)
             if closest:
                 move_and_click(closest.x, closest.y, "right")
                 find_icon_and_click(get_action_icon_by_resource(const.JOB_FARMER, resource, "seeds"), confidence=0.70)
+                return True
         elif has_resources:
             closest = get_closest_point(resource_locations)
             if closest:
                 move_and_click(closest.x, closest.y, "right")
                 find_icon_and_click(get_action_icon_by_resource(const.JOB_FARMER, resource, "harvest"), confidence=0.70)
+                return True
         else:
-            logger.info("Recurso não encontrado")
+            logger.warning("Recurso não encontrado na tela")
+            return False
+    
+    return False
 
 def advanced_lumberjack_actions():
     resource = globalState.selectedResource

@@ -230,6 +230,9 @@ ICON_ACTION_FISHERMAN_FISH = "hook-icon.png"
 ICON_ACTION_LUMBERJACK_GET = "get-icon.png"
 ICON_ACTION_LUMBERJACK_CUT_TREE = "cut-tree-icon.png"
 
+# Alternative Icons (fallback)
+ICON_ACTION_FARMING_REAP_ALT = "reap-icon-alt.png"
+
 
 ## Available Actions by resource
 
