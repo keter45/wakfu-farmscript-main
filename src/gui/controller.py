@@ -13,7 +13,6 @@ from src.core import globalState, globalHotkeyManager, hotkeyListener
 class GUIController:
     def __init__(self):
         self.selected_job = None
-        self.selected_zone = None
         self.selected_resource = None
         self.selected_key = const.KEY_STR_F2
         self.is_running = False
@@ -22,10 +21,6 @@ class GUIController:
     def select_job(self, job):
         self.selected_job = job
         logger.info(f"Profissão selecionada: {job}")
-    
-    def select_zone(self, zone):
-        self.selected_zone = zone
-        logger.info(f"Zona selecionada: {zone}")
     
     def select_resource(self, resource):
         self.selected_resource = resource
@@ -75,7 +70,6 @@ class GUIController:
         
         try:
             globalState.selectedJob = self.selected_job
-            globalState.selectedZone = self.selected_zone
             globalState.selectedResource = self.selected_resource
             globalState.selectedKey = self.selected_key
             globalState.status = const.STATUS_ACTIVE
@@ -83,7 +77,6 @@ class GUIController:
             logger.info("=" * 60)
             logger.info("CONFIGURAÇÕES:")
             logger.info(f"   Profissão: {self.selected_job}")
-            logger.info(f"   Zona: {self.selected_zone}")
             logger.info(f"   Recurso: {self.selected_resource}")
             logger.info(f"   Hotkey: {self.selected_key}")
             logger.info(f"   Delay: {delay} segundos")

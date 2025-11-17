@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM Instalador do Wakfu FarmScript
+REM Instalador do Wakfu FarmScript v0.2.1
 REM ============================================================
 color 0A
 title Wakfu FarmScript - Instalador
@@ -10,41 +10,28 @@ echo ============================================================
 echo   INSTALADOR - WAKFU FARMSCRIPT
 echo ============================================================
 echo.
-echo Este programa instalara todas as dependencias necessarias
-echo.
-pause
 
-REM Verificar se Python está instalado
-python --version >nul 2>&1
+REM Executar instalador Python
+python instalar.py
+
 if errorlevel 1 (
     echo.
-    echo [ERRO] Python nao foi encontrado no sistema!
+    echo ============================================================
+    echo INSTALACAO FALHOU!
+    echo ============================================================
     echo.
-    echo Baixe Python 3.14+ em: https://www.python.org/downloads/
-    echo Certifique-se de marcar "Add Python to PATH" durante instalacao
+    echo Verifique os erros acima e tente novamente.
+    echo.
+    echo Solucoes comuns:
+    echo   - Certifique-se que Python 3.8+ esta instalado
+    echo   - Execute como Administrador
+    echo   - Verifique sua conexao com internet
     echo.
     pause
     exit /b 1
 )
 
-echo [OK] Python encontrado!
 echo.
-echo Instalando dependencias...
-echo.
-
-REM Atualizar pip
-echo [1/2] Atualizando pip...
-python -m pip install --upgrade pip >nul 2>&1
-
-REM Instalar requirements
-echo [2/2] Instalando bibliotecas...
-python -m pip install -r requirements.txt
-
-echo.
-echo ============================================================
-echo INSTALACAO CONCLUIDA!
-echo ============================================================
-echo.
-echo Agora voce pode rodar: python FarmScriptGUI_Tkinter.py
+echo Instalacao finalizada com sucesso!
 echo.
 pause

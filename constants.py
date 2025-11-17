@@ -72,16 +72,51 @@ RESOURCE_MINER_SHARD_OF_FLINT = "Shard of flint"
 RESOURCE_MINER_ROYAL_BAUXITE = "Royal bauxite ore"
 
 
-# Farmer Resources
+# Farmer Resources (com níveis)
+FARMER_RESOURCES = [
+    (0, "Astracacia"),
+    (0, "Wheat"),
+    (5, "Artichoke"),
+    (10, "Tuberbulb"),
+    (15, "Barley"),
+    (20, "Cawwot Plant"),
+    (25, "Babbage Plant"),
+    (30, "Oats"),
+    (35, "Melon"),
+    (40, "Magic Beanstalk"),
+    (40, "Rye"),
+    (45, "Mottled Mushroom"),
+    (50, "Vanilla Rice"),
+    (55, "Golden Makoffee"),
+    (60, "Watermelon"),
+    (65, "Corn"),
+    (70, "Beans"),
+    (75, "Desert Truffle"),
+    (80, "Mushray"),
+    (85, "Black Cawwot Plant"),
+    (90, "Jollyflower"),
+    (95, "Sunflower"),
+    (100, "Strawberry"),
+    (105, "Pumpkin"),
+    (110, "Maniok"),
+    (115, "Palm Rod"),
+    (120, "Sweet Jute"),
+    (125, "Chili"),
+    (130, "Iced Cranberry"),
+    (135, "Hactus"),
+    (140, "Bloodflower"),
+    (140, "Demon Fruit"),
+    (145, "Evil Bean"),
+    (145, "Grambo Root"),
+]
+
+# Manter constantes antigas para compatibilidade
 RESOURCE_FARMER_WHEAT = "Wheat"
 RESOURCE_FARMER_ARTICHOKE = "Artichoke"
 RESOURCE_FARMER_TUBERBULB = "Tuberbulb"
 RESOURCE_FARMER_BARLEY = "Barley"
-RESOURCE_FARMER_CENTEIO = "Centeio"
-
-RESOURCE_FARMER_CAWWOT_PLANT = "Cawwot-plant"
-RESOURCE_FARMER_BABBAGE_PLANT = "Babbage-plant"
-
+RESOURCE_FARMER_CAWWOT_PLANT = "Cawwot Plant"
+RESOURCE_FARMER_BABBAGE_PLANT = "Babbage Plant"
 RESOURCE_FARMER_OATS = "Oats"
 RESOURCE_FARMER_MELON = "Melon"
 
@@ -212,10 +247,6 @@ ICON_FOR_ACTIONS_FARMER = {
         "seeds": ICON_ACTION_FARMING_SEEDS,
     },
     RESOURCE_FARMER_BARLEY: {
-        "harvest": ICON_ACTION_FARMING_REAP,
-        "seeds": ICON_ACTION_FARMING_SEEDS,
-    },
-    RESOURCE_FARMER_CENTEIO: {
         "harvest": ICON_ACTION_FARMING_REAP,
         "seeds": ICON_ACTION_FARMING_SEEDS,
     },

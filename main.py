@@ -17,7 +17,7 @@ class FarmScriptGUI:
     def __init__(self, root):
         self.root = root
         self.root.title(f"{const.PROJECT_NAME} {const.VERSION}")
-        self.root.geometry("500x480")
+        self.root.geometry("500x450")
         self.root.resizable(False, False)
         
         self._setup_style()
@@ -40,30 +40,19 @@ class FarmScriptGUI:
         self._create_control_frame(main_frame)
     
     def _create_job_zone_frame(self, parent):
-        frame = ttk.LabelFrame(parent, text=const.GUI_FRAME_SELECTJOBANDZONE_TEXT, padding="10")
+        frame = ttk.LabelFrame(parent, text="< Selecionar Profissão >", padding="10")
         frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
         ttk.Label(frame, text="Profissão:").pack(side=tk.LEFT, padx=5)
         
         self.job_var = tk.StringVar(value=const.JOB_FARMER)
-        job_combo = ttk.Combobox(frame, textvariable=self.job_var, state='readonly', width=15)
+        job_combo = ttk.Combobox(frame, textvariable=self.job_var, state='readonly', width=30)
         job_combo['values'] = (
             const.JOB_MINER, const.JOB_LUMBERJACK, const.JOB_FARMER,
             const.JOB_FISHERMAN, const.JOB_HERBALIST, const.JOB_TRAPPER,
         )
         job_combo.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
         job_combo.bind("<<ComboboxSelected>>", self._on_job_changed)
-        
-        ttk.Label(frame, text="Zona:").pack(side=tk.LEFT, padx=5)
-        
-        self.zone_var = tk.StringVar()
-        self.zone_combo = ttk.Combobox(frame, textvariable=self.zone_var, state='readonly', width=15)
-        self.zone_combo['values'] = (
-            const.ZONE_ASTRUB, const.ZONE_AMAKNA, const.ZONE_BRAKMAR,
-            const.ZONE_WILD_ESTATE, const.ZONE_SUFOKIA, const.ZONE_BONTA,
-        )
-        self.zone_combo.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
-        self.zone_combo.bind("<<ComboboxSelected>>", self._on_zone_changed)
     
     def _create_resource_frame(self, parent):
         frame = ttk.LabelFrame(parent, text=const.GUI_FRAME_SELECTRESOURCE_TEXT, padding="10")
@@ -137,6 +126,9 @@ class FarmScriptGUI:
         
         calibrate_btn = ttk.Button(frame, text="📷 Calibrar", command=self._on_calibrate)
         calibrate_btn.pack(side=tk.LEFT, padx=2)
+        
+        update_btn = ttk.Button(frame, text="🔄", command=self._on_check_update, width=3)
+        update_btn.pack(side=tk.LEFT, padx=2)
     
     def _initialize_defaults(self):
         self._on_job_changed(None)
@@ -144,11 +136,6 @@ class FarmScriptGUI:
     def _on_job_changed(self, event):
         job = self.job_var.get()
         gui_controller.select_job(job)
-        self._update_resources()
-    
-    def _on_zone_changed(self, event):
-        zone = self.zone_var.get()
-        gui_controller.select_zone(zone)
         self._update_resources()
     
     def _on_resource_changed(self, event):
@@ -193,6 +180,69 @@ class FarmScriptGUI:
     
     def _on_calibrate(self):
         gui_controller.open_calibrator()
+    
+    def _on_check_update(self):
+        """Verifica e aplica atualizações"""
+        from src.utils.updater import updater
+        from tkinter import messagebox
+        import threading
+        
+        def check_update_thread():
+            has_update, latest_version, download_url = updater.check_for_updates()
+            
+            if has_update:
+                # Buscar changelog
+                changelog = updater.get_changelog()
+                
+                message = f"Nova versão disponível: v{latest_version}\n"
+                message += f"Versão atual: v{const.VERSION}\n\n"
+                
+                if changelog:
+                    message += "Novidades:\n"
+                    # Limitar changelog a 200 caracteres
+                    if len(changelog) > 200:
+                        message += changelog[:200] + "..."
+                    else:
+                        message += changelog
+                    message += "\n\n"
+                
+                message += "Deseja atualizar agora?"
+                
+                result = messagebox.askyesno(
+                    "Atualização Disponível",
+                    message,
+                    icon='info'
+                )
+                
+                if result:
+                    # Tentar atualizar via git
+                    if updater.update_via_git():
+                        messagebox.showinfo(
+                            "Atualização Concluída",
+                            "Atualização realizada com sucesso!\n\n"
+                            "Por favor, reinicie o programa."
+                        )
+                        self.root.quit()
+                    else:
+                        # Fallback: download manual
+                        updater.download_and_install_manual(download_url)
+            else:
+                if latest_version:
+                    messagebox.showinfo(
+                        "Sem Atualizações",
+                        f"Você já está na versão mais recente!\n\n"
+                        f"Versão atual: v{const.VERSION}"
+                    )
+                else:
+                    messagebox.showerror(
+                        "Erro",
+                        "Não foi possível verificar atualizações.\n\n"
+                        "Verifique sua conexão com internet."
+                    )
+        
+        # Executar em thread para não travar a UI
+        thread = threading.Thread(target=check_update_thread, daemon=True)
+        thread.start()
     
     def _disable_controls(self):
         for child in self.root.winfo_children():

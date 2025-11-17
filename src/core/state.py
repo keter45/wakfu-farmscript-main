@@ -6,7 +6,6 @@ import constants as const
 class GlobalState:
     def __init__(self):
         self.selectedJob = None
-        self.selectedZone = None
         self.selectedResource = None
         self.selectedKey = None
         self.status = const.STATUS_WAITING
@@ -14,7 +13,6 @@ class GlobalState:
         self.isStartButtonEnabled = True
         self.isStopButtonEnabled = False
         self.isResourceComboEnabled = False
-        self.isZoneComboEnabled = False
         self.cutOnlyMode = False  # Modo que só usa Cut, sem Harvest
 
 globalState = GlobalState()

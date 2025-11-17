@@ -8,6 +8,7 @@ from src.utils.logger import logger
 from src.utils.resource_loader import resource_loader
 import constants as const
 from src.automation import routines
+from src.automation.captcha_detector import captcha_detector
 
 class AutomationEngine:
     def __init__(self):
@@ -39,6 +40,13 @@ class AutomationEngine:
                 continue
             
             try:
+                # Verificar captcha antes de executar colheita
+                if captcha_detector.detect_captcha_event():
+                    logger.warning("⚠️  CAPTCHA DETECTADO! Pausando automação...")
+                    self.is_active = False
+                    captcha_detector.solve_captcha()
+                    continue
+                
                 logger.action(f"Executando colheita de {self.resource}...")
                 
                 self._execute_harvest_routine()
