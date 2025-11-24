@@ -18,6 +18,64 @@ def locate_in_center_region(image_path, confidence=0.70):
     except:
         return []
 
+def locate_from_center_outward(image_path, confidence=0.70, max_results=10):
+    """Busca imagem em círculos concêntricos do centro para fora
+    
+    Divide a região em 3 zonas concêntricas e busca do centro para fora:
+    - Zona 1: Centro (30% da tela)
+    - Zona 2: Meio (50% da tela)
+    - Zona 3: Externa (60% da tela - região completa)
+    """
+    center_x, center_y = game_config.center
+    full_region = game_config.search_region
+    
+    # Define as 3 zonas concêntricas
+    zones = [
+        # Zona 1: Centro (30%)
+        (
+            int(center_x - full_region[2] * 0.15),
+            int(center_y - full_region[3] * 0.15),
+            int(full_region[2] * 0.30),
+            int(full_region[3] * 0.30)
+        ),
+        # Zona 2: Meio (50%)
+        (
+            int(center_x - full_region[2] * 0.25),
+            int(center_y - full_region[3] * 0.25),
+            int(full_region[2] * 0.50),
+            int(full_region[3] * 0.50)
+        ),
+        # Zona 3: Externa (60% - completa)
+        full_region
+    ]
+    
+    all_locations = []
+    for zone in zones:
+        try:
+            locations = list(auto.locateAllOnScreen(image_path, confidence=confidence, region=zone))
+            if locations:
+                logger.debug(f"Encontrados {len(locations)} recursos na zona {zones.index(zone)+1}")
+                all_locations.extend(locations)
+                # Se já encontrou resultados suficientes, para a busca
+                if len(all_locations) >= max_results:
+                    break
+        except:
+            continue
+    
+    # Remove duplicatas (recursos que aparecem em múltiplas zonas)
+    unique_locations = []
+    for loc in all_locations:
+        is_duplicate = False
+        for existing in unique_locations:
+            # Se a distância entre dois pontos é < 20px, considera duplicata
+            if abs(loc.left - existing.left) < 20 and abs(loc.top - existing.top) < 20:
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            unique_locations.append(loc)
+    
+    return unique_locations[:max_results]
+
 def get_closest_point(pointlist):
     """Retorna o ponto mais próximo ao centro da tela"""
     if not pointlist:
@@ -68,11 +126,15 @@ def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: 
         icons_to_try.append("reap-icon-alt.png")
         logger.info(f"Adicionado ícone alternativo: reap-icon-alt.png")
     
-    # Ajusta confiabilidade para reap (mais permissivo)
+    # Ajusta confiabilidade para diferentes ícones
     if icon_filename == "reap-icon.png" or icon_filename == "reap-icon-alt.png":
-        confidence_levels = [0.65, 0.60, 0.55]
+        confidence_levels = [0.60, 0.55, 0.50, 0.45]
+    elif icon_filename == "cut-icon.png":
+        confidence_levels = [0.60, 0.55, 0.50, 0.45]
+    elif icon_filename == "harvest-icon.png":
+        confidence_levels = [0.60, 0.55, 0.50, 0.45]
     else:
-        confidence_levels = [confidence, 0.70]
+        confidence_levels = [confidence, 0.60, 0.55, 0.50]
     
     logger.info(f"Buscando ícones: {icons_to_try} com confiabilidade {confidence_levels}")
     
@@ -83,12 +145,12 @@ def find_icon_and_click(icon_filename: str, confidence: float = 0.75, duration: 
         # Pega a posição atual do mouse (onde o menu deve estar)
         mouse_x, mouse_y = auto.position()
         
-        # Define região de busca de 500x700 pixels ao redor do cursor
-        search_width = 500
-        search_height = 700
+        # Define região de busca de 600x800 pixels ao redor do cursor
+        search_width = 600
+        search_height = 800
         region = (
             max(0, mouse_x - search_width // 2),
-            max(0, mouse_y - 100),  # Menu geralmente aparece abaixo/ao lado do cursor
+            max(0, mouse_y - 150),  # Menu geralmente aparece abaixo/ao lado do cursor
             search_width,
             search_height
         )
@@ -130,9 +192,9 @@ def get_action_icon_by_resource(job: str, resource_name: str, action: str):
         else:
             clean_name = clean_name.lower()
         
-        # Recursos que usam REAP (ceifar) - grãos, cereais, linho, algodão
+        # Recursos que usam REAP (ceifar) - grãos, cereais, linho, algodão (EXCETO rice/arroz)
         reap_resources = [
-            "wheat", "barley", "oats", "rye", "rice", "millet",
+            "wheat", "barley", "oats", "rye", "millet",
             "flax", "hemp", "jute", "cotton", "linen"
         ]
         

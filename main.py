@@ -17,8 +17,8 @@ class FarmScriptGUI:
     def __init__(self, root):
         self.root = root
         self.root.title(f"{const.PROJECT_NAME} {const.VERSION}")
-        self.root.geometry("500x450")
-        self.root.resizable(False, False)
+        self.root.geometry("550x450")
+        self.root.resizable(True, True)
         
         self._setup_style()
         self._create_widgets()
@@ -33,87 +33,109 @@ class FarmScriptGUI:
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        self._create_job_zone_frame(main_frame)
+        self._create_job_and_key_frame(main_frame)
         self._create_resource_frame(main_frame)
-        self._create_hotkey_frame(main_frame)
         self._create_delay_frame(main_frame)
         self._create_control_frame(main_frame)
     
-    def _create_job_zone_frame(self, parent):
-        frame = ttk.LabelFrame(parent, text="< Selecionar Profissão >", padding="10")
-        frame.pack(fill=tk.BOTH, expand=True, pady=5)
+    def _create_job_and_key_frame(self, parent):
+        """Profissão e Hotkey na mesma linha (proporção 9:3)"""
+        frame = ttk.LabelFrame(parent, text="⚒️  Profissão e Ativação", padding="10")
+        frame.pack(fill=tk.X, pady=5)
         
-        ttk.Label(frame, text="Profissão:").pack(side=tk.LEFT, padx=5)
+        # Container com grid para proporção 9:3
+        container = ttk.Frame(frame)
+        container.pack(fill=tk.X, expand=True)
+        
+        # Coluna da profissão (75% da largura)
+        job_frame = ttk.Frame(container)
+        job_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        
+        ttk.Label(job_frame, text="Profissão:").pack(side=tk.LEFT, padx=(0, 5))
         
         self.job_var = tk.StringVar(value=const.JOB_FARMER)
-        job_combo = ttk.Combobox(frame, textvariable=self.job_var, state='readonly', width=30)
+        job_combo = ttk.Combobox(job_frame, textvariable=self.job_var, state='readonly')
         job_combo['values'] = (
             const.JOB_MINER, const.JOB_LUMBERJACK, const.JOB_FARMER,
             const.JOB_FISHERMAN, const.JOB_HERBALIST, const.JOB_TRAPPER,
         )
-        job_combo.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
+        job_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
         job_combo.bind("<<ComboboxSelected>>", self._on_job_changed)
-    
-    def _create_resource_frame(self, parent):
-        frame = ttk.LabelFrame(parent, text=const.GUI_FRAME_SELECTRESOURCE_TEXT, padding="10")
-        frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        resource_subframe = ttk.Frame(frame)
-        resource_subframe.pack(fill=tk.BOTH, expand=True, padx=5)
+        # Coluna da hotkey (25% da largura)
+        key_frame = ttk.Frame(container)
+        key_frame.pack(side=tk.LEFT, fill=tk.BOTH)
         
-        self.resource_var = tk.StringVar()
-        self.resource_combo = ttk.Combobox(resource_subframe, textvariable=self.resource_var, state='readonly')
-        self.resource_combo.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.resource_combo.bind("<<ComboboxSelected>>", self._on_resource_changed)
-        
-        refresh_btn = ttk.Button(resource_subframe, text="🔄", command=self._refresh_resources, width=3)
-        refresh_btn.pack(side=tk.LEFT, padx=5)
-    
-    def _create_hotkey_frame(self, parent):
-        frame = ttk.LabelFrame(parent, text=const.GUI_FRAME_ASSIGNAKEY, padding="10")
-        frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        ttk.Label(key_frame, text="Hotkey:").pack(side=tk.LEFT, padx=(0, 5))
         
         self.key_var = tk.StringVar(value=const.KEY_STR_F2)
-        key_combo = ttk.Combobox(frame, textvariable=self.key_var, state='readonly')
+        key_combo = ttk.Combobox(key_frame, textvariable=self.key_var, state='readonly', width=10)
         key_combo['values'] = (
             const.KEY_STR_F1, const.KEY_STR_F2, const.KEY_STR_F3,
             const.KEY_STR_F4, const.KEY_STR_F5, const.KEY_STR_F6, const.KEY_STR_F7,
         )
-        key_combo.pack(fill=tk.BOTH, expand=True, padx=5)
+        key_combo.pack(side=tk.LEFT)
         key_combo.bind("<<ComboboxSelected>>", self._on_key_changed)
     
+    
+    def _create_resource_frame(self, parent):
+        frame = ttk.LabelFrame(parent, text="🌾  Recurso", padding="10")
+        frame.pack(fill=tk.X, pady=5)
+        
+        self.resource_var = tk.StringVar()
+        self.resource_combo = ttk.Combobox(frame, textvariable=self.resource_var, state='readonly')
+        self.resource_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.resource_combo.bind("<<ComboboxSelected>>", self._on_resource_changed)
+        
+        refresh_btn = ttk.Button(frame, text="🔄", command=self._refresh_resources, width=3)
+        refresh_btn.pack(side=tk.LEFT)
+    
     def _create_delay_frame(self, parent):
-        frame = ttk.LabelFrame(parent, text="Configurações de Tempo", padding="10")
+        frame = ttk.LabelFrame(parent, text="⏱️  Configurações de Tempo", padding="12")
         frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # Primeira linha: Delay
+        # Delay manual
         delay_frame = ttk.Frame(frame)
-        delay_frame.pack(fill=tk.X, pady=2)
+        delay_frame.pack(fill=tk.X, pady=(0, 8))
         
         ttk.Label(delay_frame, text="Delay após colheita (seg):").pack(side=tk.LEFT, padx=5)
         
-        self.delay_var = tk.StringVar(value="15")
-        delay_spin = ttk.Spinbox(delay_frame, from_=1, to=300, textvariable=self.delay_var, width=5)
-        delay_spin.pack(side=tk.LEFT, padx=5)
+        self.delay_var = tk.StringVar(value="5")
+        self.delay_spin = ttk.Spinbox(delay_frame, from_=1, to=300, textvariable=self.delay_var, width=8)
+        self.delay_spin.pack(side=tk.LEFT, padx=5)
         
-        ttk.Label(delay_frame, text="(Aguarda barra + delay)", foreground='gray').pack(side=tk.LEFT, padx=5)
+        self.delay_info_label = ttk.Label(delay_frame, text="(Delay manual)", foreground='gray')
+        self.delay_info_label.pack(side=tk.LEFT)
         
-        # Segunda linha: Modo Cut-Only
+        # Modo Cut-Only
         mode_frame = ttk.Frame(frame)
-        mode_frame.pack(fill=tk.X, pady=2)
+        mode_frame.pack(fill=tk.X, pady=(0, 5))
         
         self.cut_only_var = tk.BooleanVar(value=False)
         cut_only_check = ttk.Checkbutton(
             mode_frame, 
-            text="Modo Cut-Only (sempre corta, nunca planta)", 
+            text="✂️ Modo Cut-Only (sempre corta, nunca planta)", 
             variable=self.cut_only_var,
             command=self._on_cut_only_changed
         )
         cut_only_check.pack(side=tk.LEFT, padx=5)
+        
+        # Modo Barra de Progresso
+        progress_frame = ttk.Frame(frame)
+        progress_frame.pack(fill=tk.X)
+        
+        self.use_progress_bar_var = tk.BooleanVar(value=False)
+        progress_check = ttk.Checkbutton(
+            progress_frame,
+            text="⏳ Usar detecção de barra de progresso (sem delay adicional)",
+            variable=self.use_progress_bar_var,
+            command=self._on_progress_mode_changed
+        )
+        progress_check.pack(side=tk.LEFT, padx=5)
     
     def _create_control_frame(self, parent):
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        frame = ttk.Frame(parent, padding="5")
+        frame.pack(fill=tk.X, pady=(5, 10))
         
         self.status_label = ttk.Label(frame, text=const.STATUS_WAITING, foreground='black')
         self.status_label.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
@@ -149,6 +171,18 @@ class FarmScriptGUI:
     def _on_cut_only_changed(self):
         cut_only = self.cut_only_var.get()
         gui_controller.set_cut_only_mode(cut_only)
+    
+    def _on_progress_mode_changed(self):
+        use_progress_bar = self.use_progress_bar_var.get()
+        gui_controller.set_progress_bar_mode(use_progress_bar)
+        
+        # Desabilita/habilita o campo de delay baseado no modo
+        if use_progress_bar:
+            self.delay_spin.configure(state='disabled')
+            self.delay_info_label.configure(text="(Usa detecção automática)")
+        else:
+            self.delay_spin.configure(state='normal')
+            self.delay_info_label.configure(text="(Delay manual)")
     
     def _update_resources(self):
         job = self.job_var.get()

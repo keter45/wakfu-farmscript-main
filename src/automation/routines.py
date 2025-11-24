@@ -4,7 +4,7 @@ Routines de colheita para cada profissão
 import pyautogui as auto
 from src.core.state import globalState
 import constants as const
-from src.utils.helpers import get_closest_point, toss_coin, move_and_click, find_icon_and_click, get_action_icon_by_resource, locate_in_center_region
+from src.utils.helpers import get_closest_point, toss_coin, move_and_click, find_icon_and_click, get_action_icon_by_resource, locate_in_center_region, locate_from_center_outward
 from src.utils.logger import logger
 
 def _get_img_name(resource: str, subcategory: str = ""):
@@ -70,17 +70,19 @@ def advanced_farming_actions():
     cut_only = globalState.cutOnlyMode
     
     try:
-        seeds_locations = locate_in_center_region(
+        seeds_locations = locate_from_center_outward(
             const.FARMER_RES_PATH + _get_img_name(resource, "seed"),
-            confidence=0.80
+            confidence=0.80,
+            max_results=5
         )
     except:
         seeds_locations = []
 
     try:
-        resource_locations = locate_in_center_region(
+        resource_locations = locate_from_center_outward(
             const.FARMER_RES_PATH + _get_img_name(resource),
-            confidence=0.80
+            confidence=0.80,
+            max_results=5
         )
     except:
         resource_locations = []
